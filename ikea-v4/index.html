@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>IKEA Canada — Quick Table Purchase Prototype</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page" role="main">
+    <header class="site-header">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">IKEA</div>
+        <div class="brand-sub">Canada — Quick Buy Prototype</div>
+      </div>
+
+      <div class="search-bar" role="search" aria-label="Search products">
+        <input id="searchInput" type="search" placeholder="Search IKEA Canada (e.g., table)" value="table" />
+        <button id="searchBtn" aria-label="Search">Search</button>
+      </div>
+
+      <div class="cart" aria-live="polite">
+        <button id="cartBtn" title="Open cart" class="cart-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 6h15l-1.5 9h-12L4 2H2" stroke="#333" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span id="cartLabel">Cart</span>
+          <span id="cartCount" class="cart-count">0</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <!-- Left panel: filters + checkout button on top -->
+      <aside class="left-panel" aria-label="Search and checkout panel">
+        <div class="left-top">
+          <button id="openCheckoutLeft" class="checkout-left-btn">Checkout — Pay on this page</button>
+          <button id="downloadImages" class="download-btn">Download sample images</button>
+        </div>
+
+        <div class="filters" aria-label="Filters">
+          <h4>Filters</h4>
+
+          <div class="filter-group">
+            <label>Category</label>
+            <div class="filter-value">Tables</div>
+          </div>
+
+          <div class="filter-group">
+            <label>Price</label>
+            <select id="priceFilter" aria-label="Price range">
+              <option value="all">All</option>
+              <option value="0-99">Under $100</option>
+              <option value="100-199">$100 - $199</option>
+              <option value="200-399" selected>$200 - $399</option>
+              <option value="400-999">Over $400</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Delivery</label>
+            <select id="deliveryFilter">
+              <option value="any">Any</option>
+              <option value="instore">In store</option>
+              <option value="delivery">Delivery</option>
+            </select>
+          </div>
+
+          <p class="tip">Tip: Use the search box to find "table" and the price filter to narrow to ~$200.</p>
+        </div>
+      </aside>
+
+      <!-- Center: product grid (3 columns, 6 products) -->
+      <section class="results-area">
+        <div class="results-header">
+          <div><strong id="resultsCount">0</strong> results for <em>"table"</em></div>
+          <div class="results-note">Showing tables only</div>
+        </div>
+
+        <div class="results-grid" id="resultsGrid" aria-live="polite">
+          <!-- Product cards inserted by JS -->
+        </div>
+      </section>
+
+      <!-- Right column intentionally removed per requirement -->
+    </main>
+
+    <footer class="site-footer">
+      Prototype created for improving IKEA Canada purchase flow. Images are product thumbnails of tables only.
+    </footer>
+  </div>
+
+  <!-- Product modal (click thumbnail or Details) -->
+  <div id="overlay" class="overlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <h3 id="modalTitle">Product</h3>
+        <button class="close-x" id="closeModal" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="modal-grid">
+        <div class="modal-left">
+          <div class="modal-image-wrap">
+            <img id="modalImage" src="" alt="Product image" width="560" height="360" />
+          </div>
+
+          <div class="modal-info">
+            <h4 id="modalName"></h4>
+            <div id="modalPrice" class="modal-price"></div>
+            <p id="modalShort" class="modal-short"></p>
+            <div class="modal-dim">
+              <strong>Dimensions</strong>
+              <div id="modalDimensions"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-right">
+          <div class="buy-box">
+            <div class="buy-title">Buy now</div>
+            <div class="buy-price"><strong id="modalPrice2"></strong></div>
+
+            <button id="modalDetailsBtn" class="btn btn-details">Details</button>
+            <!-- Add to cart below Details -->
+            <button id="modalAddBtn" class="btn btn-add">Add to cart</button>
+
+            <p class="buy-note">Free returns within 365 days. Delivery options available at checkout.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Checkout overlay (appears when user clicks Checkout or Add to cart) -->
+  <div id="checkoutOverlay" class="overlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal checkout-modal" role="document" aria-labelledby="checkoutTitle">
+      <div class="modal-header">
+        <h3 id="checkoutTitle">Checkout</h3>
+        <button class="close-x" id="closeCheckout" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="checkout-grid">
+        <!-- Left: shipping & payment form -->
+        <div class="checkout-form">
+          <h4>Shipping details</h4>
+          <div class="form-row">
+            <input id="shipName" placeholder="Full name" />
+            <input id="shipPhone" placeholder="Phone" />
+          </div>
+          <div class="form-row">
+            <input id="shipAddress" placeholder="Street address" />
+          </div>
+          <div class="form-row">
+            <input id="shipCity" placeholder="City" />
+            <input id="shipPostal" placeholder="Postal code" />
+          </div>
+          <div class="form-row">
+            <select id="shipProvince">
+              <option>Ontario</option>
+              <option>Quebec</option>
+              <option>British Columbia</option>
+              <option>Alberta</option>
+            </select>
+            <select id="shipCountry">
+              <option>Canada</option>
+            </select>
+          </div>
+
+          <h4>Payment</h4>
+          <div class="form-row">
+            <input id="cardName" placeholder="Name on card" />
+          </div>
+          <div class="form-row">
+            <input id="cardNumber" placeholder="Card number" />
+          </div>
+          <div class="form-row">
+            <input id="cardExpiry" placeholder="MM/YY" />
+            <input id="cardCvc" placeholder="CVC" />
+          </div>
+
+          <label class="save-card"><input type="checkbox" id="saveCard" /> Save card for faster checkout</label>
+
+          <button id="submitOrder" class="submit-order">Submit order — Pay now</button>
+
+          <button id="continueShopping" class="continue-btn">Continue Shopping</button>
+        </div>
+
+        <!-- Right: order summary (shows added product(s)) -->
+        <aside class="checkout-summary">
+          <div class="summary-title">Order summary</div>
+          <div id="checkoutItems" class="summary-items"></div>
+
+          <div class="summary-row">
+            <div class="muted">Subtotal</div>
+            <div id="checkoutSubtotal" class="bold">$0.00</div>
+          </div>
+          <div class="summary-row">
+            <div class="muted">Estimated tax</div>
+            <div id="checkoutTax" class="bold">$0.00</div>
+          </div>
+          <div class="summary-row total-row">
+            <div class="bold">Total</div>
+            <div id="checkoutTotal" class="big">$0.00</div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
